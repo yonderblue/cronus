@@ -20,6 +20,7 @@ final class ProcessRegistry
      *         },
      *         ...
      *     },
+     *     'version' => MongoId(an id),
      * }
      */
 
@@ -72,12 +73,13 @@ final class ProcessRegistry
         for ($i = 0; $i < 5; ++$i) {
             $existing = $collection->findAndModify(
                 array('_id' => $id),
-                array('$setOnInsert' => array('hosts' => array())),
+                array('$setOnInsert' => array('hosts' => array(), 'version' => new \MongoId())),
                 null,
                 array('new' => true, 'upsert' => true)
             );
 
             $replacement = $existing;
+            $replacement['version'] = new \MongoId();
 
             //clean $replacement based on their pids and expire times
             foreach ($existing['hosts'] as $hostname => $pids) {
@@ -123,7 +125,7 @@ final class ProcessRegistry
             $thisHostPids[$thisPid] = new \MongoDate($expireSecs);
             $replacement['hosts'][$thisHostName] = $thisHostPids;
 
-            $status = $collection->update($existing, $replacement);
+            $status = $collection->update(array('_id' => $existing['_id'], 'version' => $existing['version']), $replacement);
             if ($status['n'] === 1) {
                 return true;
             }
@@ -157,7 +159,10 @@ final class ProcessRegistry
         $thisHostName = self::_getEncodedHostname();
         $thisPid = getmypid();
 
-        $collection->update(array('_id' => $id), array('$unset' => array("hosts.{$thisHostName}.{$thisPid}" => '')));
+        $collection->update(
+            array('_id' => $id),
+            array('$unset' => array("hosts.{$thisHostName}.{$thisPid}" => ''), '$set' => array('version' => new \MongoId()))
+        );
     }
 
     /**
@@ -194,7 +199,10 @@ final class ProcessRegistry
         $thisHostName = self::_getEncodedHostname();
         $thisPid = getmypid();
 
-        $collection->update(array('_id' => $id), array('$set' => array("hosts.{$thisHostName}.{$thisPid}" => new \MongoDate($expireSecs))));
+        $collection->update(
+            array('_id' => $id),
+            array('$set' => array("hosts.{$thisHostName}.{$thisPid}" => new \MongoDate($expireSecs), 'version' => new \MongoId()))
+        );
     }
 
     /**
