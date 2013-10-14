@@ -99,13 +99,13 @@ final class ProcessRegistryTest extends \PHPUnit_Framework_TestCase
      */
     public function add_overMaxGlobalProcessesOnSameHost()
     {
-        $pipes = [];
+        $pipes = array();
         $process = proc_open('sleep 3 &', self::_getDevNullProcOpenDescriptors(), $pipes);
-        $pid = proc_get_status($process)['pid'];
+        $status = proc_get_status($process);
 
         $initalTask = array(
             '_id' => 'testId',
-            'hosts' => array(HOSTNAME => array($pid => new \MongoDate(time() + 60))),
+            'hosts' => array(HOSTNAME => array($status['pid'] => new \MongoDate(time() + 60))),
             'version' => new \MongoId(),
         );
 
@@ -120,13 +120,13 @@ final class ProcessRegistryTest extends \PHPUnit_Framework_TestCase
      */
     public function add_overMaxHostProcesses()
     {
-        $pipes = [];
+        $pipes = array();
         $process = proc_open('sleep 3 &', self::_getDevNullProcOpenDescriptors(), $pipes);
-        $pid = proc_get_status($process)['pid'];
+        $status = proc_get_status($process);
 
         $initalTask = array(
             '_id' => 'testId',
-            'hosts' => array(HOSTNAME => array($pid => new \MongoDate(time() + 60))),
+            'hosts' => array(HOSTNAME => array($status['pid'] => new \MongoDate(time() + 60))),
             'version' => new \MongoId(),
         );
 
@@ -172,9 +172,10 @@ final class ProcessRegistryTest extends \PHPUnit_Framework_TestCase
      */
     public function add_cleaningNotRunningProcessWithExtra()
     {
-        $pipes = [];
+        $pipes = array();
         $process = proc_open('sleep 3 &', self::_getDevNullProcOpenDescriptors(), $pipes);
-        $extraPid = proc_get_status($process)['pid'];
+        $status = proc_get_status($process);
+        $extraPid = $status['pid'];
 
         $expireSecs = time() + 60;
         $initialVersion = new \MongoId();
@@ -312,9 +313,10 @@ final class ProcessRegistryTest extends \PHPUnit_Framework_TestCase
      */
     public function add_cleaningRecycledProcessWithExtra()
     {
-        $pipes = [];
+        $pipes = array();
         $process = proc_open('sleep 3 &', self::_getDevNullProcOpenDescriptors(), $pipes);
-        $extraPid = proc_get_status($process)['pid'];
+        $status = proc_get_status($process);
+        $extraPid = $status['pid'];
 
         $expireSecs = time() + 60;
         $initialVersion = new \MongoId();
