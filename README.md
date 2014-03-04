@@ -52,7 +52,7 @@ In addition to the composer dependencies the project relies on [procfs](http://e
 
 ##Documentation
 
-Found in the [source](src/DominionEnterprises/Cronus/ProcessRegistry.php) itself, take a look!
+Found in the [source](src/ProcessRegistry.php) itself, take a look!
 
 ##Contact
 
